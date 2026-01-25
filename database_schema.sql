@@ -38,7 +38,42 @@ CREATE TABLE order_items (
     
     FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES products(id)
+    FOREIGN KEY (product_id) REFERENCES products(id)
 );
+
+-- 4. TABLO BANYÈ (Banner)
+-- Estoke konfigirasyon banyè akèy la (nòmalman yon sèl ranje).
+CREATE TABLE banners (
+    id INT PRIMARY KEY DEFAULT 1,
+    title TEXT,
+    subtitle TEXT,
+    promo_text TEXT,
+    button_text TEXT,
+    image TEXT,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Mete yon banyè pa defo si li pa egziste
+INSERT INTO banners (id, title, subtitle, promo_text, button_text, image)
+VALUES (1, 'Pi bon kalite, pi bon pri!', 'Boutik Paw 2026', 'Plis pase 4,000 moun fè nou konfyans.', 'Kòmanse Achte', 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=2070&auto=format&fit=crop')
+ON CONFLICT (id) DO NOTHING;
+
+-- 5. TABLO KATEGORI (Categories)
+-- Pou jere kategori yo yon fason dinamik.
+CREATE TABLE categories (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) UNIQUE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Done inisyal pou kategori
+INSERT INTO categories (name) VALUES 
+('Ebook'), 
+('Electronic'), 
+('Shop'), 
+('Provisions')
+ON CONFLICT (name) DO NOTHING;
+
 
 -- EXEMPLE QUERY (Kijan pou w jwen done yo)
 

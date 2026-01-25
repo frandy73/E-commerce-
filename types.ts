@@ -1,5 +1,10 @@
 
-export type Category = 'Ebook' | 'Electronic' | 'Shop' | 'Provisions' | 'All';
+export type Category = string;
+
+export interface DbCategory {
+  id: number;
+  name: string;
+}
 
 export interface Product {
   id: string;
@@ -26,4 +31,13 @@ export interface PastOrder {
   date: string;
   items: CartItem[];
   total: number;
+}
+
+export interface Banner {
+  id: number;
+  title: string;
+  subtitle: string;
+  promoText: string;
+  buttonText: string;
+  image: string;
 }

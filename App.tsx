@@ -1,15 +1,15 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Category, Product, CartItem } from './types';
+import { Category, Product, CartItem, Banner, DbCategory } from './types';
 import { PRODUCTS as INITIAL_PRODUCTS, WHATSAPP_NUMBER as DEFAULT_WHATSAPP } from './constants';
 import { ProductCard } from './components/ProductCard';
 import { Cart } from './components/Cart';
 import { AdminPanel } from './components/AdminPanel';
 import { getShoppingAdvice, generateProductDescription, getShoppingAssistantResponse } from './geminiService';
-import { subscribeToProducts, addProductToDb, updateProductInDb, deleteProductFromDb } from './services/db';
+import { subscribeToProducts, addProductToDb, updateProductInDb, deleteProductFromDb, subscribeToBanner, subscribeToCategories } from './services/db';
 import { uploadProductImage, deleteProductImage } from './services/storage';
+import logo from './logo.jpg';
 
-const categories: Category[] = ['All', 'Ebook', 'Electronic', 'Shop', 'Provisions'];
 const ADMIN_PASSWORD = "1234";
 
 interface Toast {
@@ -30,6 +30,8 @@ const App: React.FC = () => {
 
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  const [dynamicCategories, setDynamicCategories] = useState<DbCategory[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
 
   const [cart, setCart] = useState<CartItem[]>(() => {
     const saved = localStorage.getItem('quickorder_cart');
@@ -66,6 +68,8 @@ const App: React.FC = () => {
   const [productCategoryInput, setProductCategoryInput] = useState<Category>('Shop');
   const [productDescInput, setProductDescInput] = useState('');
 
+  const [currentBanner, setCurrentBanner] = useState<Banner | null>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const aiScrollRef = useRef<HTMLDivElement>(null);
 
@@ -82,8 +86,20 @@ const App: React.FC = () => {
       setIsLoadingProducts(false);
     });
 
+    setIsLoadingCategories(true);
+    const unsubscribeCategories = subscribeToCategories((categories) => {
+      setDynamicCategories(categories);
+      setIsLoadingCategories(false);
+    });
+
+    const unsubscribeBanner = subscribeToBanner((banner) => {
+      setCurrentBanner(banner);
+    });
+
     return () => {
       if (unsubscribe) unsubscribe();
+      if (unsubscribeCategories) unsubscribeCategories();
+      if (unsubscribeBanner) unsubscribeBanner();
     };
   }, []);
 
@@ -124,6 +140,10 @@ const App: React.FC = () => {
   const cartTotal = useMemo(() => cart.reduce((sum, item) => sum + item.price * item.quantity, 0), [cart]);
   const totalItems = useMemo(() => cart.reduce((sum, item) => sum + item.quantity, 0), [cart]);
   const totalStockValue = useMemo(() => allProducts.reduce((sum, p) => sum + p.price, 0), [allProducts]);
+
+  const categories = useMemo(() => {
+    return ['All', ...dynamicCategories.map(c => c.name)];
+  }, [dynamicCategories]);
 
   const filteredProducts = useMemo(() => {
     let result = allProducts;
@@ -306,6 +326,8 @@ const App: React.FC = () => {
           onDeleteProduct={handleDeleteProduct}
           onAddProduct={handleOpenAddModal}
           totalStockValue={totalStockValue}
+          currentBanner={currentBanner}
+          dbCategories={dynamicCategories}
         />
       ) : (
         <div className="min-h-screen bg-[#FAFAFF] pb-24 font-sans selection:bg-indigo-100">
@@ -324,9 +346,7 @@ const App: React.FC = () => {
           <header className="bg-white/90 backdrop-blur-xl shadow-sm sticky top-0 z-[100] border-b border-gray-100">
             <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
               <div className="flex items-center gap-3 cursor-pointer group" onClick={() => { setSelectedCategory('All'); setSearchTerm(''); }}>
-                <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200 rotate-3 group-hover:rotate-0 transition-transform">
-                  <i className="fa-solid fa-bolt-lightning text-white text-xl"></i>
-                </div>
+                <img src={logo} alt="Boutik Paw Logo" className="w-12 h-12 rounded-2xl object-cover shadow-lg shadow-indigo-200 rotate-3 group-hover:rotate-0 transition-transform" />
                 <div className="hidden sm:block">
                   <h1 className="text-xl font-black text-gray-900 leading-none">Boutik Paw</h1>
                   <span className="text-[10px] uppercase tracking-[0.2em] text-indigo-500 font-black">Ayiti Premium</span>
@@ -459,20 +479,29 @@ const App: React.FC = () => {
 
           <main className="max-w-7xl mx-auto px-4 py-8">
             {/* Banner */}
-            <div className="mb-12 relative rounded-[3rem] overflow-hidden group shadow-2xl shadow-indigo-100">
-              <div className="absolute inset-0 bg-gradient-to-br from-indigo-700 via-indigo-600 to-purple-800"></div>
-              <div className="absolute top-0 right-0 p-12 opacity-10 pointer-events-none">
-                <i className="fa-solid fa-bag-shopping text-[250px] -rotate-12"></i>
+            <div className="mb-12 relative rounded-[3rem] overflow-hidden group shadow-2xl shadow-indigo-100 min-h-[400px] flex">
+              <div
+                className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 group-hover:scale-105"
+                style={{ backgroundImage: `url(${currentBanner?.image || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=2070&auto=format&fit=crop'})` }}
+              >
+                <div className="absolute inset-0 bg-indigo-900/40 backdrop-blur-[2px]"></div>
               </div>
-              <div className="relative z-10 p-10 md:p-16 flex flex-col md:flex-row items-center justify-between gap-10">
+              <div className="relative z-10 p-10 md:p-16 flex flex-col md:flex-row items-center justify-between gap-10 w-full">
                 <div className="max-w-2xl text-white">
-                  <span className="inline-block px-4 py-1.5 bg-white/20 backdrop-blur-md rounded-full text-xs font-black uppercase tracking-widest mb-6">Boutik Paw 2024</span>
-                  <h2 className="text-4xl md:text-6xl font-black mb-6 leading-tight">Pi bon kalite, <br /><span className="text-indigo-200 underline decoration-wavy underline-offset-8">pi bon pri!</span></h2>
+                  <span className="inline-block px-4 py-1.5 bg-white/20 backdrop-blur-md rounded-full text-xs font-black uppercase tracking-widest mb-6">
+                    {currentBanner?.subtitle || 'Boutik Paw 2026'}
+                  </span>
+                  <h2 className="text-4xl md:text-6xl font-black mb-6 leading-tight">
+                    {currentBanner?.title.split(',')[0] || 'Pi bon kalite'}, <br />
+                    <span className="text-indigo-200 underline decoration-wavy underline-offset-8">
+                      {currentBanner?.title.split(',')[1] || 'pi bon pri!'}
+                    </span>
+                  </h2>
                   <div className="flex flex-wrap gap-4 items-center">
                     <div className="flex -space-x-3">
                       {[1, 2, 3, 4].map(i => <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-indigo-400 flex items-center justify-center font-bold text-[10px]">{i}k+</div>)}
                     </div>
-                    <p className="text-indigo-50 font-medium">Plis pase 4,000 moun fè nou konfyans.</p>
+                    <p className="text-indigo-50 font-medium">{currentBanner?.promoText || 'Plis pase 4,000 moun fè nou konfyans.'}</p>
                   </div>
                 </div>
                 <div className="bg-white/10 backdrop-blur-xl p-8 rounded-[2.5rem] border border-white/20 w-full max-w-sm shadow-2xl">
