@@ -11,6 +11,8 @@ CREATE TABLE products (
     category VARCHAR(50) NOT NULL,       -- Kategori (Ebook, Electronic, Shop, Provisions)
     description TEXT,                    -- Deskripsyon detaye
     image TEXT,                          -- URL imaj la
+    supplier_name VARCHAR(255),          -- Non founisè a (Dropshipping)
+    supplier_contact VARCHAR(255),       -- Kontak founisè a (WhatsApp, Tel...)
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

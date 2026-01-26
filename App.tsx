@@ -67,6 +67,8 @@ const App: React.FC = () => {
   const [productPriceInput, setProductPriceInput] = useState('');
   const [productCategoryInput, setProductCategoryInput] = useState<Category>('Shop');
   const [productDescInput, setProductDescInput] = useState('');
+  const [productSupplierNameInput, setProductSupplierNameInput] = useState('');
+  const [productSupplierContactInput, setProductSupplierContactInput] = useState('');
 
   const [currentBanner, setCurrentBanner] = useState<Banner | null>(null);
 
@@ -197,6 +199,8 @@ const App: React.FC = () => {
     setProductCategoryInput(product.category);
     setProductDescInput(product.description);
     setImagePreview(product.image);
+    setProductSupplierNameInput(product.supplierName || '');
+    setProductSupplierContactInput(product.supplierContact || '');
     setIsModalOpen(true);
   };
 
@@ -207,6 +211,8 @@ const App: React.FC = () => {
     setProductCategoryInput('Shop');
     setProductDescInput('');
     setImagePreview(null);
+    setProductSupplierNameInput('');
+    setProductSupplierContactInput('');
     setIsModalOpen(true);
   };
 
@@ -282,7 +288,9 @@ const App: React.FC = () => {
       category: productCategoryInput,
       description: productDescInput,
       image: imagePreview || `https://picsum.photos/seed/${Date.now()}/400/400`,
-    };
+      supplierName: productSupplierNameInput,
+      supplierContact: productSupplierContactInput
+    } as Product;
 
     let success = false;
     if (editingProduct) {
@@ -578,8 +586,8 @@ const App: React.FC = () => {
               </div>
               <button onClick={() => setIsModalOpen(false)} className="w-12 h-12 rounded-full bg-white/20 hover:bg-white/40 transition-colors flex items-center justify-center"><i className="fa-solid fa-xmark"></i></button>
             </div>
-            <form onSubmit={handleSaveProduct} className="p-10 space-y-6 overflow-y-auto">
-              <div className="space-y-4">
+            <form onSubmit={handleSaveProduct} className="flex flex-col overflow-hidden h-full">
+              <div className="p-10 space-y-6 overflow-y-auto flex-1">
                 <div onClick={() => !isUploadingImage && fileInputRef.current?.click()} className={`w-full aspect-video rounded-3xl border-4 border-dashed border-indigo-50 flex flex-col items-center justify-center overflow-hidden relative transition-all group shrink-0 ${isUploadingImage ? 'cursor-wait' : 'cursor-pointer hover:bg-indigo-50'}`}>
                   {imagePreview ? (
                     <>
@@ -633,16 +641,28 @@ const App: React.FC = () => {
                   </div>
                 </div>
 
+                <div className="bg-indigo-50/50 p-6 rounded-3xl space-y-4 border border-indigo-100">
+                  <h4 className="text-xs font-black text-indigo-600 uppercase tracking-widest flex items-center gap-2">
+                    <i className="fa-solid fa-truck-ramp-box"></i> Enfòmasyon Founisè (Admin)
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input value={productSupplierNameInput} onChange={e => setProductSupplierNameInput(e.target.value)} placeholder="Non Founisè" className="w-full px-6 py-4 rounded-2xl bg-white border-none ring-1 ring-gray-100 focus:ring-2 focus:ring-indigo-600 outline-none font-bold text-sm" />
+                    <input value={productSupplierContactInput} onChange={e => setProductSupplierContactInput(e.target.value)} placeholder="Kontak (WhatsApp...)" className="w-full px-6 py-4 rounded-2xl bg-white border-none ring-1 ring-gray-100 focus:ring-2 focus:ring-indigo-600 outline-none font-bold text-sm" />
+                  </div>
+                  <p className="text-[10px] text-gray-400 font-medium">Enfòmasyon sa yo sèlman vizib pou ou nan lis pwodui yo nan Admin.</p>
+                </div>
               </div>
-              <button type="submit" className="w-full bg-indigo-600 text-white font-black py-5 rounded-2xl shadow-xl hover:bg-indigo-700 transition-all active:scale-95 text-lg shrink-0">
-                {editingProduct ? 'ANREXISTRE SOU SUPABASE' : 'KONFIME SOU SUPABASE'}
-              </button>
+
+              <div className="p-10 pt-0">
+                <button type="submit" className="w-full bg-indigo-600 text-white font-black py-5 rounded-2xl shadow-xl hover:bg-indigo-700 transition-all active:scale-95 text-lg">
+                  {editingProduct ? 'ANREXISTRE SOU SUPABASE' : 'KONFIME SOU SUPABASE'}
+                </button>
+              </div>
             </form>
           </div>
         </div>
       )}
     </>
-
   );
 };
 

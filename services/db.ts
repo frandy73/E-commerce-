@@ -14,7 +14,12 @@ export const subscribeToProducts = (callback: (products: Product[]) => void) => 
       .order('name', { ascending: true });
 
     if (!error && data) {
-      callback(data as Product[]);
+      const mapped = (data as any[]).map(p => ({
+        ...p,
+        supplierName: p.supplier_name,
+        supplierContact: p.supplier_contact
+      }));
+      callback(mapped as Product[]);
     }
   };
 
@@ -45,19 +50,22 @@ export const subscribeToProducts = (callback: (products: Product[]) => void) => 
 // Ajoute yon pwodui nan Supabase
 export const addProductToDb = async (product: Omit<Product, "id">) => {
   try {
+    const dbData = {
+      ...product,
+      supplier_name: (product as any).supplierName,
+      supplier_contact: (product as any).supplierContact
+    };
+    // Retire key camelCase yo pou yo pa voye nan DB
+    delete (dbData as any).supplierName;
+    delete (dbData as any).supplierContact;
+
     const { data, error } = await supabase
       .from(TABLE_NAME)
-      .insert([product])
+      .insert([dbData])
       .select();
 
     if (error) {
       console.error("❌ Erè Supabase Add:", error);
-      console.error("Detay erè:", {
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        code: error.code
-      });
       return false;
     }
 
@@ -72,9 +80,19 @@ export const addProductToDb = async (product: Omit<Product, "id">) => {
 // Modifye yon pwodui
 export const updateProductInDb = async (id: string, updates: Partial<Product>) => {
   try {
+    const dbUpdates = { ...updates } as any;
+    if (updates.supplierName !== undefined) {
+      dbUpdates.supplier_name = updates.supplierName;
+      delete dbUpdates.supplierName;
+    }
+    if (updates.supplierContact !== undefined) {
+      dbUpdates.supplier_contact = updates.supplierContact;
+      delete dbUpdates.supplierContact;
+    }
+
     const { error } = await supabase
       .from(TABLE_NAME)
-      .update(updates)
+      .update(dbUpdates)
       .eq('id', id);
 
     return !error;

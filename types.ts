@@ -14,6 +14,8 @@ export interface Product {
   description: string;
   image: string;
   isCustom?: boolean;
+  supplierName?: string;
+  supplierContact?: string;
 }
 
 export interface CartItem extends Product {

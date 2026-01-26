@@ -199,6 +199,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Imaj</th>
                       <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Non</th>
                       <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Kategori</th>
+                      <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Founisè</th>
                       <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Pri</th>
                       <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-right">Aksyon</th>
                     </tr>
@@ -214,6 +215,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         <td className="px-6 py-4 font-bold text-gray-800">{product.name}</td>
                         <td className="px-6 py-4">
                           <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-500 text-xs font-bold uppercase">{product.category}</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-xs font-medium text-gray-500">{product.supplierName || '---'}</span>
                         </td>
                         <td className="px-6 py-4 font-bold text-indigo-600">{product.price.toLocaleString()} G</td>
                         <td className="px-6 py-4 text-right">
